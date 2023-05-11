@@ -320,18 +320,31 @@ namespace ComputerAnalyzer
 
         private void showConnectedDevices()
         {
-            listBox3.Items.Clear();
 
+            var devices = DriveInfo.GetDrives().Where(d => d.IsReady & d.DriveType == DriveType.Removable);
+
+            listBox3.Items.Clear();
+            /*
+            foreach (var mo in devices)
+            {
+                //listBox3.Items.Add((string)mo["Name"]);
+                listBox3.Items.Add(string.Format("{0}", mo.Name));
+                //listBox3.Items.Add("");
+            }
+            */
+            
             foreach (var mo in new ManagementObjectSearcher("root\\cimv2", "select * from Win32_USBHub").Get())
             {
                 //listBox3.Items.Add((string)mo["Name"]);
-                listBox3.Items.Add(string.Format("{0}", (string)mo["Name"]));
+                listBox3.Items.Add(string.Format("{0}", (string)mo["name"]));
                 //listBox3.Items.Add("");
             }
+            
         }
 
         private void DisableDevice_Click(object sender, EventArgs e)
         {
+            // https://www.codeproject.com/Articles/21503/Hardware-Helper-Library-for-C -> либа которая вроде все делает но на форуме написали что она не работает
             // https://www.youtube.com/watch?v=HvWD20ktSG4 -> another solution
             // https://www.section.io/engineering-education/how-to-create-a-winforms-io-manager-for-removable-drives-in-csharp/ -> another solution
 
@@ -346,7 +359,8 @@ namespace ComputerAnalyzer
 
                 // Win32_PnPEntity
                 // Win32_USBHub
-                foreach (ManagementObject mo in new ManagementObjectSearcher("root\\CIMV2", @"SELECT * FROM Win32_PnPEntity where Name Like " + '"' + device + '"').Get())
+                // Win32_PointingDevice -> мышка
+                foreach (ManagementObject mo in new ManagementObjectSearcher("root\\CIMV2", @"SELECT * FROM Win32_PointingDevice where deviceid = " + '"' + device + '"').Get())
                 {
                     try
                     {
