@@ -1,6 +1,9 @@
+using Microsoft.VisualBasic;
+using Microsoft.Win32;
 using System.Data;
 using System.Diagnostics;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.Arm;
 using System.Windows.Forms;
 
@@ -141,6 +144,7 @@ namespace ComputerAnalyzer
             procList.Clear();
             listBox2.Items.Clear();
             listBox1.Items.Clear();
+
             foreach (var winProc in Process.GetProcesses())
             {
                 if (!processes.ContainsKey(winProc.ProcessName))
@@ -153,15 +157,16 @@ namespace ComputerAnalyzer
                     processes[winProc.ProcessName].Add(winProc);
                 }
             }
+
             foreach (var processname in processes.Keys)
             {
                 procList.Add(processname);
             }
+
             foreach (var item in procList)
             {
                 listBox1.Items.Add(item);
             }
-            //listBox1.Visible = true;
         }
 
         private void showMemoryUsage_Click(object sender, EventArgs e)
@@ -186,30 +191,23 @@ namespace ComputerAnalyzer
 
         private void listBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            //MessageBox.Show(listBox1.SelectedItem.ToString());
             listBox2.Items.Clear();
+
             var myproc = processes[listBox1.SelectedItem.ToString()];
+
             foreach (var proc in myproc)
             {
                 listBox2.Items.Add(string.Format("Process: {0}, Memory: {1}", proc.Id, proc.PagedMemorySize64));
             }
-            /*while (processes.TryGetValue(listBox1.SelectedItem.ToString(), out Process myProc)) 
-            {
-                listBox2.Items.Add(string.Format("Process: {0}, Name: {1}, Memory: {2}", myProc.Id, myProc.ProcessName, myProc.PagedMemorySize64));
-            }*/
-            listBox2.Visible = true;
+
             killProcess.Visible = true;
             killSingleProcess.Visible = true;
         }
 
-        /*private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }*/
-
         private void killProcess_Click(object sender, EventArgs e)
         {
             var myproc = processes[listBox1.SelectedItem.ToString()];
+
             foreach (var proc in myproc)
             {
                 try { proc.Kill(); }
@@ -219,12 +217,14 @@ namespace ComputerAnalyzer
                 }
 
             }
+
             showProcesses_Click(null, null);
         }
 
         private void killSingleProcess_Click(object sender, EventArgs e)
         {
             var myproc = processes[listBox1.SelectedItem.ToString()];
+
             if (listBox2.SelectedIndex != -1)
             {
                 try { myproc[listBox2.SelectedIndex].Kill(); }
@@ -259,7 +259,6 @@ namespace ComputerAnalyzer
         private void sortBtn_Click(object sender, EventArgs e)
         {
             var procList = new List<string>();
-            //var mulProc = new List<Process>();
             processes.Clear();
             procList.Clear();
             listBox2.Items.Clear();
@@ -274,10 +273,7 @@ namespace ComputerAnalyzer
                 else
                 {
                     processes[winProc.ProcessName].Add(winProc);
-                    //processes.TryAdd(winProc.ProcessName, winProc);
                 }
-                //processes.Add(winProc.ProcessName, winProc);
-                //procList.Add(string.Format("Process: {0}, Name: {1}, Memory: {2}", winProc.Id, winProc.ProcessName,winProc.PagedMemorySize64));
             }
             foreach (var processname in processes.Keys)
             {
@@ -288,7 +284,6 @@ namespace ComputerAnalyzer
             var orderedlist = orderedProcess.ToList();
             orderedlist.Reverse();
 
-            //listBox1.Visible = true;
             switch (comboBox1.SelectedIndex)
             {
                 case -1:
@@ -297,94 +292,87 @@ namespace ComputerAnalyzer
                 case 0:
                     foreach (var item in procList)
                     {
-                        //ProcessesView.Items.Add(item);
                         listBox1.Items.Add(item);
                     }
                     break;
                 case 1:
                     foreach (var item in orderedlist)
                     {
-                        //ProcessesView.Items.Add(item);
                         listBox1.Items.Add(item);
                     }
                     break;
             }
         }
 
-
-
-        private void listBox3_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            
-        }
-
         private void showConnectedDevices()
         {
-
-            var devices = DriveInfo.GetDrives().Where(d => d.IsReady & d.DriveType == DriveType.Removable);
-
             listBox3.Items.Clear();
-            /*
-            foreach (var mo in devices)
-            {
-                //listBox3.Items.Add((string)mo["Name"]);
-                listBox3.Items.Add(string.Format("{0}", mo.Name));
-                //listBox3.Items.Add("");
-            }
-            */
-            
+               
             foreach (var mo in new ManagementObjectSearcher("root\\cimv2", "select * from Win32_USBHub").Get())
             {
-                //listBox3.Items.Add((string)mo["Name"]);
-                listBox3.Items.Add(string.Format("{0}", (string)mo["name"]));
-                //listBox3.Items.Add("");
-            }
-            
+                listBox3.Items.Add(string.Format("Name: {0}, DeviceId: {1}", (string)mo["name"], (string)mo["deviceid"]));
+            }  
         }
 
         private void DisableDevice_Click(object sender, EventArgs e)
-        {
-            // https://www.codeproject.com/Articles/21503/Hardware-Helper-Library-for-C -> либа которая вроде все делает но на форуме написали что она не работает
-            // https://www.youtube.com/watch?v=HvWD20ktSG4 -> another solution
-            // https://www.section.io/engineering-education/how-to-create-a-winforms-io-manager-for-removable-drives-in-csharp/ -> another solution
-
-
-            // my solution
-            // https://copyprogramming.com/howto/how-to-enable-disabe-an-usb-device-specific-with-c
-            // https://stackoverflow.com/questions/67928031/how-to-enable-disabe-an-usb-device-specific-with-c-sharp
-            if (listBox3.SelectedIndex != -1)
+        { 
+            [DllImport("shell32")] static extern bool IsUserAnAdmin();
+            
+            if (IsUserAnAdmin() == false)
             {
-                var item = listBox3.SelectedItem.ToString();
-                var device = item;
-
-                // Win32_PnPEntity
-                // Win32_USBHub
-                // Win32_PointingDevice -> мышка
-                foreach (ManagementObject mo in new ManagementObjectSearcher("root\\CIMV2", @"SELECT * FROM Win32_PointingDevice where deviceid = " + '"' + device + '"').Get())
-                {
-                    try
-                    {
-                        MessageBox.Show((string)mo["deviceid"]);
-                        mo.InvokeMethod("Disable", null);
-                    }
-                    catch(Exception ex)
-                    {
-                        //MessageBox.Show("Device can't be disabled!");
-                        MessageBox.Show(ex.Message);
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("Pick Device!");
+                MessageBox.Show("You are not admin", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
             
-        }
+            if (listBox3.SelectedIndex == -1)
+            {
+                MessageBox.Show("Select device!");
+                return;
+            }
 
+            string selectedDevice = listBox3.SelectedItem.ToString().Split(' ').AsQueryable().Last();
+            string objectPath = string.Format("Win32_PnPEntity.DeviceID='{0}'", selectedDevice);
+
+            ManagementObject device = new ManagementObject(objectPath);
+            try
+            {
+                MessageBox.Show("Device disabled!");
+                device.InvokeMethod("Disable", null);
+            } catch {  }
+        }
 
         private void UpdateDevicesList_Click(object sender, EventArgs e)
         {
             showConnectedDevices();
+        }
+
+        private void EnableDeviceBtn_Click(object sender, EventArgs e)
+        {
+            [DllImport("shell32")] static extern bool IsUserAnAdmin();
+
+            if (IsUserAnAdmin() == false)
+            {
+                MessageBox.Show("You are not admin", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (listBox3.SelectedIndex == -1)
+            {
+                MessageBox.Show("Select device!");
+                return;
+            }
+
+            string selectedDevice = listBox3.SelectedItem.ToString().Split(' ').AsQueryable().Last();
+            string objectPath = string.Format("Win32_PnPEntity.DeviceID='{0}'", selectedDevice);
+
+            ManagementObject device = new ManagementObject(objectPath);
+
+            try
+            {
+                MessageBox.Show("Device Enabled!");
+                device.InvokeMethod("Enable", null);
+            }
+            catch { }
         }
     }
 }

@@ -47,6 +47,7 @@
             this.listBox3 = new System.Windows.Forms.ListBox();
             this.DisableDeviceBtn = new System.Windows.Forms.Button();
             this.UpdateDevicesList = new System.Windows.Forms.Button();
+            this.EnableDeviceBtn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.hardwareGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -208,7 +209,6 @@
             this.listBox3.Name = "listBox3";
             this.listBox3.Size = new System.Drawing.Size(1344, 284);
             this.listBox3.TabIndex = 17;
-            this.listBox3.SelectedIndexChanged += new System.EventHandler(this.listBox3_SelectedIndexChanged);
             // 
             // DisableDeviceBtn
             // 
@@ -230,11 +230,22 @@
             this.UpdateDevicesList.UseVisualStyleBackColor = true;
             this.UpdateDevicesList.Click += new System.EventHandler(this.UpdateDevicesList_Click);
             // 
+            // EnableDeviceBtn
+            // 
+            this.EnableDeviceBtn.Location = new System.Drawing.Point(654, 774);
+            this.EnableDeviceBtn.Name = "EnableDeviceBtn";
+            this.EnableDeviceBtn.Size = new System.Drawing.Size(94, 29);
+            this.EnableDeviceBtn.TabIndex = 20;
+            this.EnableDeviceBtn.Text = "Enable Device ";
+            this.EnableDeviceBtn.UseVisualStyleBackColor = true;
+            this.EnableDeviceBtn.Click += new System.EventHandler(this.EnableDeviceBtn_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1613, 1045);
+            this.Controls.Add(this.EnableDeviceBtn);
             this.Controls.Add(this.UpdateDevicesList);
             this.Controls.Add(this.DisableDeviceBtn);
             this.Controls.Add(this.listBox3);
@@ -283,5 +294,6 @@
         private ListBox listBox3;
         private Button DisableDeviceBtn;
         private Button UpdateDevicesList;
+        private Button EnableDeviceBtn;
     }
 }
