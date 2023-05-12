@@ -307,7 +307,14 @@ namespace ComputerAnalyzer
         private void showConnectedDevices()
         {
             listBox3.Items.Clear();
-               
+
+            // Win32_PointingDevice
+            // Win32_USBHub
+            foreach (var mo in new ManagementObjectSearcher("root\\cimv2", "select * from Win32_PointingDevice").Get())
+            {
+                listBox3.Items.Add(string.Format("Name: {0}, DeviceId: {1}", (string)mo["name"], (string)mo["deviceid"]));
+            }
+
             foreach (var mo in new ManagementObjectSearcher("root\\cimv2", "select * from Win32_USBHub").Get())
             {
                 listBox3.Items.Add(string.Format("Name: {0}, DeviceId: {1}", (string)mo["name"], (string)mo["deviceid"]));
